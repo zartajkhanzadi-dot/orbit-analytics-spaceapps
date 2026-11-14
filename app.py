@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from scipy import stats
@@ -59,6 +58,13 @@ REGIONS = {
         "coords": "33.45°N–33.95°N, 72.85°E–73.55°E",
     },
 }
+
+
+def resolve_csv_path(slug: str, var_key: str) -> str:
+    base = os.path.join("data", f"{slug}_{var_key}")
+    if os.path.exists(base + ".csv"):
+        return base + ".csv"
+    return base + ".csv.csv"
 
 
 # --- ROBUST NASA GIOVANNI CSV PARSER ---
@@ -154,7 +160,7 @@ selected_region_label = st.sidebar.selectbox(
 )
 region_info = REGIONS[selected_region_label]
 
-primary_path = os.path.join("data", f"{region_info['slug']}_{var_info['key']}.csv")
+primary_path = resolve_csv_path(region_info["slug"], var_info["key"])
 df_raw = load_giovanni_csv(primary_path)
 
 if df_raw.empty:
@@ -282,7 +288,7 @@ if compare_all:
     summary_rows = []
 
     for r_label, r_meta in REGIONS.items():
-        path = os.path.join("data", f"{r_meta['slug']}_{var_info['key']}.csv")
+        path = resolve_csv_path(r_meta["slug"], var_info["key"])
         d = load_giovanni_csv(path)
         d = d[(d["Date"].dt.year >= year_range[0]) & (d["Date"].dt.year <= year_range[1])].copy()
         if not d.empty:
